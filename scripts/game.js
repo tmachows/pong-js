@@ -6,10 +6,19 @@ var fieldWidth = 400,
     fieldHeight = 200;
 
 // paddle variables
-var paddleWidth, paddleHeight, paddleDepth, paddleQuality;
+var paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddle1, paddle2;
+var paddle1DirY = 0,
+    paddle2DirY = 0,
+    paddleSpeed = 3;
 
 // ball variables
-var ball, paddle1, paddle2;
+var ball;
+var ballDirX = 1,
+    ballDirY = 1,
+    ballSpeed = 2;
+
+// game-related variables
+var difficulty = 0.2;
 
 function setup() {
 
@@ -143,4 +152,98 @@ function draw() {
     requestAnimationFrame(draw);
 
     // process game logic
+    ballPhysics();
+    playerPaddleMovement();
+    opponentPaddleMovement();
+}
+
+function ballPhysics() {
+    // update ball position over time
+    ball.position.x += ballDirX * ballSpeed;
+    ball.position.y += ballDirY * ballSpeed;
+
+    // limit ball's y-speed to 2x the x-speed
+    // this is so the ball doesn't speed from left to right super fast
+    // keeps game playable for humans
+    if (ballDirY > ballSpeed * 2) {
+        ballDirY = ballSpeed * 2;
+    } else if (ballDirY < -ballSpeed * 2) {
+        ballDirY = -ballSpeed * 2;
+    }
+
+    // if ball goes off the top side (side of table)
+    if (ball.position.y <= -fieldHeight/2) {
+        ballDirY = -ballDirY;
+    }
+
+    // if ball goes off the bottom side (side of table)
+    if (ball.position.y >= fieldHeight/2) {
+        ballDirY = -ballDirY;
+    }
+}
+
+function playerPaddleMovement() {
+    // move left
+    if (Key.isDown(Key.A)) {
+        // if paddle is not touching the side of table
+        // we move
+        if (paddle1.position.y < fieldHeight * 0.45) {
+            paddle1DirY = paddleSpeed * 0.5;
+        }
+        // else we do not move and stretch the paddle
+        // to indicate we can't move
+        else {
+            paddle1DirY = 0;
+            paddle1.scale.z += (10 - paddle1.scale.z) * 0.2;
+        }
+    }
+    // move right
+    else if (Key.isDown(Key.D)) {
+        // if paddle is not touching the side of table
+        // we move
+        if (paddle1.position.y > -fieldHeight * 0.45) {
+            paddle1DirY = -paddleSpeed * 0.5;
+        }
+        // else we do not move and stretch the paddle
+        // to indicate we can't move
+        else {
+            paddle1DirY = 0;
+            paddle1.scale.z += (10 - paddle1.scale.z) * 0.2;
+        }
+    }
+    // else don't move paddle
+    else {
+        paddle1DirY = 0;
+    }
+
+    paddle1.scale.z += (1 - paddle1.scale.z) * 0.2;
+
+    paddle1.position.y += paddle1DirY;
+}
+
+function opponentPaddleMovement() {
+    // lerp towards the ball on the y plane
+    paddle2DirY = (ball.position.y - paddle2.position.y) * difficulty;
+
+    // in case the Lerp function produces a value above max paddle speed, we clamp it
+    if (Math.abs(paddle2DirY) <= paddleSpeed) {
+        paddle2.position.y += paddle2DirY;
+    }
+    // if the lerp value is too high, we have to limit speed to paddleSpeed
+    else {
+        // if paddle is lerping in +ve direction
+        if (paddle2DirY > paddleSpeed) {
+            paddle2.position.y += paddleSpeed;
+        }
+        // if paddle is lerping in -ve direction
+        else if (paddle2DirY < -paddleSpeed) {
+            paddle2.position.y -= paddleSpeed;
+        }
+    }
+
+    // we lerp the scale back to 1
+    // this is done because we stretch the paddle at some points
+    // stretching is done when paddle touches side of table and when paddle hits ball
+    // by doing this here, we ensure paddle always comes back to default size
+    paddle2.scale.y += (1 - paddle2.scale.y) * 0.2;
 }
