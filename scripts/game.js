@@ -15,10 +15,13 @@ var paddle1DirY = 0,
 var ball;
 var ballDirX = 1,
     ballDirY = 1,
-    ballSpeed = 2;
+    ballSpeed = 3;
 
 // game-related variables
 var difficulty = 0.2;
+var score1 = 0,
+    score2 = 0,
+    maxScore = 7;
 
 function setup() {
 
@@ -125,7 +128,7 @@ function createScene() {
 
     // add the padle to the scene
     scene.add(paddle1);
-
+    
     // set up paddle 2
     paddle2 = new THREE.Mesh(
         new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
@@ -153,11 +156,45 @@ function draw() {
 
     // process game logic
     ballPhysics();
+    paddlePhysics();
     playerPaddleMovement();
     opponentPaddleMovement();
 }
 
 function ballPhysics() {
+    // if ball goes off the 'left' side (Player's side)
+    if (ball.position.x <= -fieldWidth/2) {
+        // CPU scores
+        score2++;
+        // update scoreboard
+        document.getElementById("scores").innerHTML = score1 + "-" + score2;
+        // reset ball
+        resetBall(2);
+        // check if match over
+        matchScoreCheck();
+    }
+    // if ball goes off the 'right' side (CPU's side)
+    if (ball.position.x >= fieldWidth/2) {
+        // Player scores
+        score1++;
+        // update scoreboard
+        document.getElementById("scores").innerHTML = score1 + "-" + score2;
+        // reset ball
+        resetBall(1);
+        // check if match over
+        matchScoreCheck();
+    }
+
+    // if ball goes off the top side (side of table)
+    if (ball.position.y <= -fieldHeight/2) {
+        ballDirY = -ballDirY;
+    }
+
+    // if ball goes off the bottom side (side of table)
+    if (ball.position.y >= fieldHeight/2) {
+        ballDirY = -ballDirY;
+    }
+
     // update ball position over time
     ball.position.x += ballDirX * ballSpeed;
     ball.position.y += ballDirY * ballSpeed;
@@ -169,16 +206,6 @@ function ballPhysics() {
         ballDirY = ballSpeed * 2;
     } else if (ballDirY < -ballSpeed * 2) {
         ballDirY = -ballSpeed * 2;
-    }
-
-    // if ball goes off the top side (side of table)
-    if (ball.position.y <= -fieldHeight/2) {
-        ballDirY = -ballDirY;
-    }
-
-    // if ball goes off the bottom side (side of table)
-    if (ball.position.y >= fieldHeight/2) {
-        ballDirY = -ballDirY;
     }
 }
 
@@ -216,6 +243,7 @@ function playerPaddleMovement() {
         paddle1DirY = 0;
     }
 
+    paddle1.scale.y += (1 - paddle1.scale.y) * 0.2;
     paddle1.scale.z += (1 - paddle1.scale.z) * 0.2;
 
     paddle1.position.y += paddle1DirY;
@@ -246,4 +274,101 @@ function opponentPaddleMovement() {
     // stretching is done when paddle touches side of table and when paddle hits ball
     // by doing this here, we ensure paddle always comes back to default size
     paddle2.scale.y += (1 - paddle2.scale.y) * 0.2;
+}
+
+// Handles paddle collision logic
+function paddlePhysics() {
+    // Player paddle logic
+
+    // if ball is aligned with paddle1 on x plane
+    // remember the position is the CENTER of the object
+    // we only check between the front and the middle of the paddle (one-way collision)
+    if (ball.position.x <= paddle1.position.x + paddleWidth &&
+        ball.position.x >= paddle1.position.x) {
+        // and if ball is aligned with paddle1 on y plane
+        if (ball.position.y <= paddle1.position.y + paddleHeight/2 &&
+            ball.position.y >= paddle1.position.y - paddleHeight/2) {
+            // ball is intersecting with the front half of the paddle
+            // and if ball is travelling towards player (-ve direction)
+            if (ballDirX < 0) {
+                // stretch the paddle to indicate a hit
+                paddle1.scale.y = 5;
+
+                // switch direction of ball travel to create bounce
+                ballDirX = -ballDirX;
+
+                // we impact ball angle when hitting it
+                // this is not realistic physics, just spices up the gameplay
+                // allows you to 'slice' the ball to beat the opponent
+                ballDirY -= paddle1DirY * 0.7;
+            }
+        }
+    }
+
+    // Opponent paddle logic
+
+    // if ball is aligned with paddle2 on x plane
+    // remember the position is the CENTER of the object
+    // we only check between the front and the middle of the paddle (one-way collision)
+    if (ball.position.x <= paddle2.position.x + paddleWidth &&
+        ball.position.x >= paddle2.position.x) {
+        // and if ball is aligned with paddle2 on y plane
+        if (ball.position.y <= paddle2.position.y + paddleHeight/2 &&
+            ball.position.y >= paddle2.position.y - paddleHeight/2) {
+            // ball is intersecting with the front half of the paddle
+            // and if ball is travelling towards opponent (+ve direction)
+            if (ballDirX > 0) {
+                // stretch the paddle to indicate a hit
+                paddle2.scale.y = 5;
+
+                // switch direction of ball travel to create bounce
+                ballDirX = -ballDirX;
+
+                // we impact ball angle when hitting it
+                // this is not realistic physics, just spices up the gameplay
+                // allows you to 'slice' the ball to beat the opponent
+                ballDirY -= paddle2DirY * 0.7;
+            }
+        }
+    }
+}
+
+// resets the ball's position to the centre of the play area
+// also sets the ball direction speed towards the last point winner
+function resetBall(loser) {
+    // position the ball in the center of the table
+    ball.position.x = 0;
+    ball.position.y = 0;
+
+    // if player lost the last point, we send the ball to the opponent
+    if (loser == 1) {
+        ballDirX = -1;
+    }
+    // else if opponent lost, we send the ball to player
+    else {
+        ballDirX = 1;
+    }
+
+    // set the ball to move +ve in y plane (towards left from the camera)
+    ballDirY = 1;
+}
+
+// checks if either player or opponent has reached 7 points
+function matchScoreCheck() {
+    // if player has 7 points
+    if (score1 >= maxScore) {
+        // stop the ball
+        ballSpeed = 0;
+        // write to the banner
+        document.getElementById("scores").innerHTML = "Player wins!";
+        document.getElementById("winnerBoard").innerHTML = "Refresh to play again";
+    }
+    // else if opponent has 7 points
+    else if (score2 >= maxScore) {
+        // stop the ball
+        ballSpeed = 0;
+        // write to the banner
+        document.getElementById("scores").innerHTML = "CPU wins!";
+        document.getElementById("winnerBoard").innerHTML = "Refresh to play again";
+    }
 }
