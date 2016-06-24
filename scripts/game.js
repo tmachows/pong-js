@@ -1,5 +1,5 @@
 
-var renderer, scene, camera, pointLight;
+var renderer, scene, camera, pointLight, spotLight;
 
 // field variables
 var fieldWidth = 400,
@@ -24,6 +24,7 @@ var score1 = 0,
     maxScore = 7;
 
 function setup() {
+    document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + "wins!";
 
     // set up all the 3D objects in the scene
     createScene();
@@ -81,6 +82,14 @@ function createScene() {
     // add the sphere to the scene
     scene.add(ball);
 
+    ball.position.x = 0;
+    ball.position.y = 0;
+    // set ball above the table surface
+    ball.position.z = radius;
+
+    ball.receiveShadow = true;
+    ball.castShadow = true;
+
     // create a point light
     pointLight = new THREE.PointLight(0xF8D898);
 
@@ -93,6 +102,16 @@ function createScene() {
 
     // add to the scene
     scene.add(pointLight);
+
+    // add a spot light
+    // this is important for casting shadows
+    spotLight = new THREE.SpotLight(0xF8D898);
+    spotLight.position.set(0, 0, 460);
+    spotLight.intensity = 1.5;
+    spotLight.castShadow = true;
+    scene.add(spotLight);
+
+    renderer.shadowMapEnabled = true;
 
     var planeWidth = fieldWidth,
         planeHeight = fieldHeight,
@@ -108,6 +127,9 @@ function createScene() {
     );
 
     scene.add(plane);
+
+    plane.receiveShadow = true;
+    plane.castShadow = true;
 
     // set up the paddle vars
     paddleWidth = 10;
@@ -128,7 +150,10 @@ function createScene() {
 
     // add the padle to the scene
     scene.add(paddle1);
-    
+
+    paddle1.receiveShadow = true;
+    paddle1.castShadow = true;
+
     // set up paddle 2
     paddle2 = new THREE.Mesh(
         new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
@@ -137,6 +162,9 @@ function createScene() {
 
     // add the second padle to the scene
     scene.add(paddle2);
+
+    paddle2.receiveShadow = true;
+    paddle2.castShadow = true;
 
     // set paddles on each side of the table
     paddle1.position.x = -fieldWidth/2 + paddleWidth;
@@ -157,6 +185,7 @@ function draw() {
     // process game logic
     ballPhysics();
     paddlePhysics();
+    cameraPhysics();
     playerPaddleMovement();
     opponentPaddleMovement();
 }
@@ -331,6 +360,22 @@ function paddlePhysics() {
             }
         }
     }
+}
+
+function cameraPhysics() {
+    // we can easily notice shadows if we dynamically move lights during the game
+    spotLight.position.x = ball.position.x;
+    spotLight.position.y = ball.position.y;
+
+    // move to behind the player's paddle
+    camera.position.x = paddle1.position.x - 100;
+    camera.position.y += (paddle1.position.y - camera.position.y) * 0.05;
+    camera.position.z = paddle1.position.z + 100 + 0.04 * (-ball.position.x + paddle1.position.x);
+
+    // rotate to face towards the opponent
+    camera.rotation.x = -0.01 * (ball.position.y) * Math.PI/180;
+    camera.rotation.y = -60 * Math.PI/180;
+    camera.rotation.z = -90 * Math.PI/180;
 }
 
 // resets the ball's position to the centre of the play area
