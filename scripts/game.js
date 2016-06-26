@@ -35,11 +35,11 @@ function setup() {
 
 function createScene() {
     // set the scene size
-    var WIDTH = 640,
-        HEIGHT = 360;
+    var WIDTH = 1000,
+        HEIGHT = 440;
 
     // set camera attributes
-    var VIEW_ANGLE = 50,
+    var VIEW_ANGLE = 60,
         ASPECT = WIDTH / HEIGHT,
         NEAR = 0.1,
         FAR = 10000;
@@ -246,11 +246,9 @@ function playerPaddleMovement() {
         if (paddle1.position.y < fieldHeight * 0.45) {
             paddle1DirY = paddleSpeed * 0.5;
         }
-        // else we do not move and stretch the paddle
-        // to indicate we can't move
+        // else we do not move
         else {
             paddle1DirY = 0;
-            paddle1.scale.z += (10 - paddle1.scale.z) * 0.2;
         }
     }
     // move right
@@ -260,20 +258,15 @@ function playerPaddleMovement() {
         if (paddle1.position.y > -fieldHeight * 0.45) {
             paddle1DirY = -paddleSpeed * 0.5;
         }
-        // else we do not move and stretch the paddle
-        // to indicate we can't move
+        // else we do not move
         else {
             paddle1DirY = 0;
-            paddle1.scale.z += (10 - paddle1.scale.z) * 0.2;
         }
     }
     // else don't move paddle
     else {
         paddle1DirY = 0;
     }
-
-    paddle1.scale.y += (1 - paddle1.scale.y) * 0.2;
-    paddle1.scale.z += (1 - paddle1.scale.z) * 0.2;
 
     paddle1.position.y += paddle1DirY;
 }
@@ -298,11 +291,6 @@ function opponentPaddleMovement() {
         }
     }
 
-    // we lerp the scale back to 1
-    // this is done because we stretch the paddle at some points
-    // stretching is done when paddle touches side of table and when paddle hits ball
-    // by doing this here, we ensure paddle always comes back to default size
-    paddle2.scale.y += (1 - paddle2.scale.y) * 0.2;
 }
 
 // Handles paddle collision logic
@@ -320,8 +308,6 @@ function paddlePhysics() {
             // ball is intersecting with the front half of the paddle
             // and if ball is travelling towards player (-ve direction)
             if (ballDirX < 0) {
-                // stretch the paddle to indicate a hit
-                paddle1.scale.y = 5;
 
                 // switch direction of ball travel to create bounce
                 ballDirX = -ballDirX;
@@ -347,8 +333,6 @@ function paddlePhysics() {
             // ball is intersecting with the front half of the paddle
             // and if ball is travelling towards opponent (+ve direction)
             if (ballDirX > 0) {
-                // stretch the paddle to indicate a hit
-                paddle2.scale.y = 5;
 
                 // switch direction of ball travel to create bounce
                 ballDirX = -ballDirX;
@@ -368,7 +352,7 @@ function cameraPhysics() {
     spotLight.position.y = ball.position.y;
 
     // move to behind the player's paddle
-    camera.position.x = paddle1.position.x - 100;
+    camera.position.x = paddle1.position.x - 80;
     camera.position.y += (paddle1.position.y - camera.position.y) * 0.05;
     camera.position.z = paddle1.position.z + 100 + 0.04 * (-ball.position.x + paddle1.position.x);
 
