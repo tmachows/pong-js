@@ -23,6 +23,9 @@ var score1 = 0,
     score2 = 0,
     maxScore = 7;
 
+// hitting ball sound
+var snd = new Audio("./sounds/hittingBall.mp3");
+
 function setup() {
     document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + "wins!";
 
@@ -323,6 +326,9 @@ function paddlePhysics() {
                 // stretch the paddle to indicate a hit
                 paddle1.scale.y = 5;
 
+                // sound of hitting ball
+                snd.play();
+
                 // switch direction of ball travel to create bounce
                 ballDirX = -ballDirX;
 
@@ -349,6 +355,9 @@ function paddlePhysics() {
             if (ballDirX > 0) {
                 // stretch the paddle to indicate a hit
                 paddle2.scale.y = 5;
+
+                // sound of hitting ball
+                snd.play();
 
                 // switch direction of ball travel to create bounce
                 ballDirX = -ballDirX;
