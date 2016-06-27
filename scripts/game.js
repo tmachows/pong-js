@@ -48,6 +48,9 @@ playerLoseMusic.addEventListener('ended', function() {
     this.play();
 }, false);
 
+// clock
+var clock = new THREE.Clock();
+
 function setup() {
     document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + "wins!";
 
@@ -261,11 +264,22 @@ function createScene() {
     var skyMaterial = new THREE.MeshFaceMaterial(materialArray);
     var skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
     scene.add( skyBox );
+
+    // fountain of player win
+    this.fountainPlayerWin = new ParticleEngine();
+    fountainPlayerWin.setValues( Examples.rain );
+    fountainPlayerWin.initialize();
 }
 
 function draw() {
     // draw THREE.JS scene
     renderer.render(scene, camera);
+
+    // update fountain of player win
+    if (score1 >= maxScore) {
+        var dt = clock.getDelta();
+        fountainPlayerWin.update( dt * 0.5 );
+    }
 
     // loop the draw() function
     requestAnimationFrame(draw);
@@ -497,6 +511,10 @@ function matchScoreCheck() {
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
         playerLoseMusic.play();
+
+        // sound of silence and black screen when we lose
+        var c = document.getElementById("gameCanvas");
+        c.style.display="none";
 
         // stop the ball
         ballSpeed = 0;
