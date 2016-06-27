@@ -34,6 +34,20 @@ backgroundMusic.addEventListener('ended', function() {
 }, false);
 backgroundMusic.play();
 
+// player win music
+playerWinMusic = new Audio('./sounds/playerWin.mp3');
+playerWinMusic.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
+
+// player lose music
+playerLoseMusic = new Audio('./sounds/playerLose.mp3');
+playerLoseMusic.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
+
 function setup() {
     document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + "wins!";
 
@@ -135,7 +149,7 @@ function createScene() {
     renderer.shadowMapEnabled = true;
 
     var planeWidth = fieldWidth,
-        planeHeight = fieldHeight,
+        planeHeight = fieldHeight + 16,
         planeQuality = 10;
 
     // create the plane's material
@@ -144,13 +158,50 @@ function createScene() {
     // create the playing surface plane
     var plane = createMesh(
         new THREE.PlaneGeometry(planeWidth * 0.95, planeHeight, planeQuality, planeQuality),
-        "surface.png"
+        "newSurface.png"
     );
 
     scene.add(plane);
 
     plane.receiveShadow = true;
     plane.castShadow = true;
+
+    // set up the wall vars
+    wallWidth = fieldWidth * 0.95;
+    wallHeight = 3;
+    wallDepth = 20;
+    wallQuality = 1;
+
+    var wallMaterial = new THREE.MeshLambertMaterial({color: 0x1B32D0});
+
+    // right wall
+    rightWall = createMesh(
+        new THREE.CubeGeometry(wallWidth, wallHeight, wallDepth, wallQuality, wallQuality, wallQuality),
+        "portugal.png"
+    );
+
+    scene.add(rightWall);
+
+    rightWall.receiveShadow = true;
+    rightWall.castShadow = true;
+
+    rightWall.position.x = fieldHeight/1000;
+    rightWall.position.y = -fieldHeight/2 - 8;
+    rightWall.position.z = wallDepth/2;
+
+    // left wall
+    leftWall = createMesh(
+        new THREE.CubeGeometry(wallWidth, wallHeight, wallDepth, wallQuality, wallQuality, wallQuality),
+        "poland.png"
+    );
+
+    scene.add(leftWall);
+    leftWall.receiveShadow = true;
+    leftWall.castShadow = true;
+
+    leftWall.position.x = fieldHeight/1000;
+    leftWall.position.y = fieldHeight/2 + 8;
+    leftWall.position.z = wallDepth/2;
 
     // set up the paddle vars
     paddleWidth = 10;
@@ -429,6 +480,11 @@ function resetBall(loser) {
 function matchScoreCheck() {
     // if player has 7 points
     if (score1 >= maxScore) {
+        // stop backgroung music and play victory anthem
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        playerWinMusic.play();
+
         // stop the ball
         ballSpeed = 0;
         // write to the banner
@@ -437,6 +493,11 @@ function matchScoreCheck() {
     }
     // else if opponent has 7 points
     else if (score2 >= maxScore) {
+        // stop backgroung music and play victory anthem
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        playerLoseMusic.play();
+
         // stop the ball
         ballSpeed = 0;
         // write to the banner
