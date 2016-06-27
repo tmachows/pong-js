@@ -24,7 +24,7 @@ var score1 = 0,
     maxScore = 7;
 
 // hitting ball sound
-var snd = new Audio("./sounds/hittingBall.mp3");
+var hittingBallSound = new Audio("./sounds/hittingBall.mp3");
 
 // background music
 backgroundMusic = new Audio('./sounds/backgroundMusic.mp3');
@@ -361,7 +361,7 @@ function paddlePhysics() {
                 paddle1.scale.y = 5;
 
                 // sound of hitting ball
-                snd.play();
+                hittingBallSound.play();
 
                 // switch direction of ball travel to create bounce
                 ballDirX = -ballDirX;
@@ -391,7 +391,7 @@ function paddlePhysics() {
                 paddle2.scale.y = 5;
 
                 // sound of hitting ball
-                snd.play();
+                hittingBallSound.play();
 
                 // switch direction of ball travel to create bounce
                 ballDirX = -ballDirX;
