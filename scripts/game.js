@@ -23,6 +23,17 @@ var score1 = 0,
     score2 = 0,
     maxScore = 7;
 
+// hitting ball sound
+var hittingBallSound = new Audio("./sounds/hittingBall.mp3");
+
+// background music
+backgroundMusic = new Audio('./sounds/backgroundMusic.mp3');
+backgroundMusic.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
+backgroundMusic.play();
+
 function setup() {
     document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + "wins!";
 
@@ -31,6 +42,16 @@ function setup() {
 
     // and let's get cracking!
     draw();
+}
+
+
+function createMesh(geom, imageFile) {
+    var texture = THREE.ImageUtils.loadTexture("textures/" + imageFile)
+    var mat = new THREE.MeshPhongMaterial();
+    mat.map = texture;
+
+    var mesh = new THREE.Mesh(geom, mat);
+    return mesh;
 }
 
 function createScene() {
@@ -118,12 +139,12 @@ function createScene() {
         planeQuality = 10;
 
     // create the plane's material
-    var planeMaterial = new THREE.MeshLambertMaterial({color: 0x4BD121});
+    // var planeMaterial = new THREE.MeshLambertMaterial({color: 0x4BD121}); //TODO delete with next pull request if new surface merged
 
     // create the playing surface plane
-    var plane = new THREE.Mesh(
+    var plane = createMesh(
         new THREE.PlaneGeometry(planeWidth * 0.95, planeHeight, planeQuality, planeQuality),
-        planeMaterial
+        "surface.png"
     );
 
     scene.add(plane);
@@ -173,6 +194,22 @@ function createScene() {
     // lift paddles over playing surface
     paddle1.position.z = paddleDepth;
     paddle2.position.z = paddleDepth;
+
+    // skybox
+    var imagePrefix = "./textures/";
+    var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
+    var imageSuffix = ".png";
+    var skyGeometry = new THREE.CubeGeometry( 1000, 1000, 1000 );
+
+    var materialArray = [];
+    for (var i = 0; i < 6; i++)
+        materialArray.push( new THREE.MeshBasicMaterial({
+            map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix  ),
+            side: THREE.BackSide
+        }));
+    var skyMaterial = new THREE.MeshFaceMaterial(materialArray);
+    var skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
+    scene.add( skyBox );
 }
 
 function draw() {
@@ -323,6 +360,9 @@ function paddlePhysics() {
                 // stretch the paddle to indicate a hit
                 paddle1.scale.y = 5;
 
+                // sound of hitting ball
+                hittingBallSound.play();
+
                 // switch direction of ball travel to create bounce
                 ballDirX = -ballDirX;
 
@@ -349,6 +389,9 @@ function paddlePhysics() {
             if (ballDirX > 0) {
                 // stretch the paddle to indicate a hit
                 paddle2.scale.y = 5;
+
+                // sound of hitting ball
+                hittingBallSound.play();
 
                 // switch direction of ball travel to create bounce
                 ballDirX = -ballDirX;
