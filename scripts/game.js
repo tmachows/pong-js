@@ -71,8 +71,7 @@ function createMesh(geom, imageFile) {
     var mat = new THREE.MeshPhongMaterial();
     mat.map = texture;
 
-    var mesh = new THREE.Mesh(geom, mat);
-    return mesh;
+    return new THREE.Mesh(geom, mat);
 }
 
 function createScene() {
@@ -180,15 +179,13 @@ function createScene() {
     plane.castShadow = true;
 
     // set up the wall vars
-    wallWidth = fieldWidth * 0.95;
-    wallHeight = 3;
-    wallDepth = 20;
-    wallQuality = 1;
-
-    var wallMaterial = new THREE.MeshLambertMaterial({color: 0x1B32D0});
+    var wallWidth = fieldWidth * 0.95;
+    var wallHeight = 3;
+    var wallDepth = 20;
+    var wallQuality = 1;
 
     // right wall
-    rightWall = createMesh(
+    var rightWall = createMesh(
         new THREE.CubeGeometry(wallWidth, wallHeight, wallDepth, wallQuality, wallQuality, wallQuality),
         "portugalWall.png"
     );
@@ -203,7 +200,7 @@ function createScene() {
     rightWall.position.z = wallDepth/2;
 
     // left wall
-    leftWall = createMesh(
+    var leftWall = createMesh(
         new THREE.CubeGeometry(wallWidth, wallHeight, wallDepth, wallQuality, wallQuality, wallQuality),
         "polandWall.png"
     );
@@ -222,16 +219,6 @@ function createScene() {
     paddleDepth = 10;
     paddleQuality = 1;
 
-    // create the paddle1's material
-    var paddle1Material = new THREE.MeshLambertMaterial({color: 0x1B32C0});
-    // create the paddle2's material
-    var paddle2Material = new THREE.MeshLambertMaterial({color: 0xFF4045});
-
-    // set up paddle 1
-    // paddle1 = new THREE.Mesh(
-    //     new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
-    //     paddle1Material
-    // );
     paddle1 = createMesh(
         new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
         "poland.png"
@@ -243,17 +230,12 @@ function createScene() {
     paddle1.receiveShadow = true;
     paddle1.castShadow = true;
 
-    // set up paddle 2
-    // paddle2 = new THREE.Mesh(
-    //     new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
-    //     paddle2Material
-    // );
     paddle2 = createMesh(
         new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
         "portugal.png"
     );
 
-    // add the second padle to the scene
+    // add the second paddle to the scene
     scene.add(paddle2);
 
     paddle2.receiveShadow = true;
