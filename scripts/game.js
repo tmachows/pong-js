@@ -49,6 +49,9 @@ playerLoseMusic.addEventListener('ended', function() {
     this.play();
 }, false);
 
+// player goal sound
+var playerGoalSound = new Audio("./sounds/playerGoal.mp3");
+
 // clock
 var clock = new THREE.Clock();
 
@@ -323,6 +326,8 @@ function ballPhysics() {
     }
     // if ball goes off the 'right' side (CPU's side)
     if (ball.position.x >= fieldWidth/2) {
+        // goal sound
+        playerGoalSound.play();
         // Player scores
         score1++;
         difficulty += 0.2;
