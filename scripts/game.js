@@ -1,5 +1,5 @@
 
-var renderer, scene, camera, pointLight, spotLight;
+var renderer, scene, camera, spotLight1, spotLight2, spotLight3, spotLight4, opponentLight;
 
 // field variables
 var fieldWidth = 400,
@@ -34,6 +34,23 @@ backgroundMusic.addEventListener('ended', function() {
 }, false);
 backgroundMusic.play();
 
+// player win music
+playerWinMusic = new Audio('./sounds/playerWin.mp3');
+playerWinMusic.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
+
+// player lose music
+playerLoseMusic = new Audio('./sounds/playerLose.mp3');
+playerLoseMusic.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
+
+// clock
+var clock = new THREE.Clock();
+
 function setup() {
     document.getElementById("winnerBoard").innerHTML = "First to " + maxScore + "wins!";
 
@@ -46,7 +63,7 @@ function setup() {
 
 
 function createMesh(geom, imageFile) {
-    var texture = THREE.ImageUtils.loadTexture("textures/" + imageFile)
+    var texture = THREE.ImageUtils.loadTexture("textures/" + imageFile);
     var mat = new THREE.MeshPhongMaterial();
     mat.map = texture;
 
@@ -91,13 +108,9 @@ function createScene() {
         segments = 6,
         rings = 6;
 
-    // create the sphere's material
-    var sphereMaterial = new THREE.MeshLambertMaterial({color: 0xD43001});
-
-    // Create a ball with sphere geometry
-    ball = new THREE.Mesh(
+    ball = createMesh(
         new THREE.SphereGeometry(radius, segments, rings),
-        sphereMaterial
+        "ball.png"
     );
 
     // add the sphere to the scene
@@ -111,46 +124,93 @@ function createScene() {
     ball.receiveShadow = true;
     ball.castShadow = true;
 
-    // create a point light
-    pointLight = new THREE.PointLight(0xF8D898);
-
-    // set its position
-    pointLight.position.x = -1000;
-    pointLight.position.y = 0;
-    pointLight.position.z = 1000;
-    pointLight.intensity = 2.9;
-    pointLight.distance = 10000;
-
-    // add to the scene
-    scene.add(pointLight);
-
-    // add a spot light
+    // add a spot lights
     // this is important for casting shadows
-    spotLight = new THREE.SpotLight(0xF8D898);
-    spotLight.position.set(0, 0, 460);
-    spotLight.intensity = 1.5;
-    spotLight.castShadow = true;
-    scene.add(spotLight);
+    var lightsOffset = 320;
+    var lightsHeight = 440;
+    var lightsAngle = 0.3;
+    var lightsDistance = 1000;
+    var lightsColor = 0xffffff;
+    var lightsIntensity = 3.5;
+    var lightsPenumbra = 0.1;
+
+    spotLight1 = new THREE.SpotLight(lightsColor, lightsIntensity, lightsDistance, lightsAngle, lightsPenumbra);
+    spotLight1.position.set(fieldWidth/2 + lightsOffset, fieldHeight/2 + lightsOffset, lightsHeight);
+    spotLight1.castShadow = true;
+    scene.add(spotLight1);
+
+    spotLight2 = new THREE.SpotLight(lightsColor, lightsIntensity, lightsDistance, lightsAngle, lightsPenumbra);
+    spotLight2.position.set(fieldWidth/2 + lightsOffset, -fieldHeight/2 - lightsOffset, lightsHeight);
+    spotLight2.castShadow = true;
+    scene.add(spotLight2);
+
+    spotLight3 = new THREE.SpotLight(lightsColor, lightsIntensity, lightsDistance, lightsAngle, lightsPenumbra);
+    spotLight3.position.set(-fieldWidth/2 - lightsOffset, fieldHeight/2 + lightsOffset, lightsHeight);
+    spotLight3.castShadow = true;
+    scene.add(spotLight3);
+
+    spotLight4 = new THREE.SpotLight(lightsColor, lightsIntensity, lightsDistance, lightsAngle, lightsPenumbra);
+    spotLight4.position.set(-fieldWidth/2 - lightsOffset, -fieldHeight/2 - lightsOffset, lightsHeight);
+    spotLight4.castShadow = true;
+    scene.add(spotLight4);
+
+    opponentLight = new THREE.PointLight( 0xffffff, 3.0, 40 );
+    opponentLight.position.set( fieldWidth/2 - 30, 0, 10 );
+    scene.add( opponentLight );
 
     renderer.shadowMapEnabled = true;
 
     var planeWidth = fieldWidth,
-        planeHeight = fieldHeight,
+        planeHeight = fieldHeight + 16,
         planeQuality = 10;
-
-    // create the plane's material
-    // var planeMaterial = new THREE.MeshLambertMaterial({color: 0x4BD121}); //TODO delete with next pull request if new surface merged
 
     // create the playing surface plane
     var plane = createMesh(
         new THREE.PlaneGeometry(planeWidth * 0.95, planeHeight, planeQuality, planeQuality),
-        "surface.png"
+        "football_pitch.png"
     );
 
     scene.add(plane);
 
     plane.receiveShadow = true;
     plane.castShadow = true;
+
+    // set up the wall vars
+    wallWidth = fieldWidth * 0.95;
+    wallHeight = 3;
+    wallDepth = 20;
+    wallQuality = 1;
+
+    var wallMaterial = new THREE.MeshLambertMaterial({color: 0x1B32D0});
+
+    // right wall
+    rightWall = createMesh(
+        new THREE.CubeGeometry(wallWidth, wallHeight, wallDepth, wallQuality, wallQuality, wallQuality),
+        "portugalWall.png"
+    );
+
+    scene.add(rightWall);
+
+    rightWall.receiveShadow = true;
+    rightWall.castShadow = true;
+
+    rightWall.position.x = fieldHeight/1000;
+    rightWall.position.y = -fieldHeight/2 - 8;
+    rightWall.position.z = wallDepth/2;
+
+    // left wall
+    leftWall = createMesh(
+        new THREE.CubeGeometry(wallWidth, wallHeight, wallDepth, wallQuality, wallQuality, wallQuality),
+        "polandWall.png"
+    );
+
+    scene.add(leftWall);
+    leftWall.receiveShadow = true;
+    leftWall.castShadow = true;
+
+    leftWall.position.x = fieldHeight/1000;
+    leftWall.position.y = fieldHeight/2 + 8;
+    leftWall.position.z = wallDepth/2;
 
     // set up the paddle vars
     paddleWidth = 10;
@@ -164,9 +224,13 @@ function createScene() {
     var paddle2Material = new THREE.MeshLambertMaterial({color: 0xFF4045});
 
     // set up paddle 1
-    paddle1 = new THREE.Mesh(
+    // paddle1 = new THREE.Mesh(
+    //     new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
+    //     paddle1Material
+    // );
+    paddle1 = createMesh(
         new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
-        paddle1Material
+        "poland.png"
     );
 
     // add the padle to the scene
@@ -176,9 +240,13 @@ function createScene() {
     paddle1.castShadow = true;
 
     // set up paddle 2
-    paddle2 = new THREE.Mesh(
+    // paddle2 = new THREE.Mesh(
+    //     new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
+    //     paddle2Material
+    // );
+    paddle2 = createMesh(
         new THREE.CubeGeometry(paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddleQuality, paddleQuality),
-        paddle2Material
+        "portugal.png"
     );
 
     // add the second padle to the scene
@@ -210,11 +278,22 @@ function createScene() {
     var skyMaterial = new THREE.MeshFaceMaterial(materialArray);
     var skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
     scene.add( skyBox );
+
+    // fountain of player win
+    this.fountainPlayerWin = new ParticleEngine();
+    fountainPlayerWin.setValues( Examples.rain );
+    fountainPlayerWin.initialize();
 }
 
 function draw() {
     // draw THREE.JS scene
     renderer.render(scene, camera);
+
+    // update fountain of player win
+    if (score1 >= maxScore) {
+        var dt = clock.getDelta();
+        fountainPlayerWin.update( dt * 0.5 );
+    }
 
     // loop the draw() function
     requestAnimationFrame(draw);
@@ -264,6 +343,9 @@ function ballPhysics() {
     // update ball position over time
     ball.position.x += ballDirX * ballSpeed;
     ball.position.y += ballDirY * ballSpeed;
+
+    ball.rotation.x += ballDirX * ballSpeed;
+    ball.rotation.y += ballDirY * ballSpeed;
 
     // limit ball's y-speed to 2x the x-speed
     // this is so the ball doesn't speed from left to right super fast
@@ -391,8 +473,9 @@ function paddlePhysics() {
 
 function cameraPhysics() {
     // we can easily notice shadows if we dynamically move lights during the game
-    spotLight.position.x = ball.position.x;
-    spotLight.position.y = ball.position.y;
+    // spotLight.position.x = ball.position.x;
+    // spotLight.position.y = ball.position.y;
+    opponentLight.position.y = paddle2.position.y;
 
     // move to behind the player's paddle
     camera.position.x = paddle1.position.x - 80;
@@ -429,6 +512,11 @@ function resetBall(loser) {
 function matchScoreCheck() {
     // if player has 7 points
     if (score1 >= maxScore) {
+        // stop backgroung music and play victory anthem
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        playerWinMusic.play();
+
         // stop the ball
         ballSpeed = 0;
         // write to the banner
@@ -437,6 +525,15 @@ function matchScoreCheck() {
     }
     // else if opponent has 7 points
     else if (score2 >= maxScore) {
+        // stop backgroung music and play victory anthem
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        playerLoseMusic.play();
+
+        // sound of silence and black screen when we lose
+        var c = document.getElementById("gameCanvas");
+        c.style.display="none";
+
         // stop the ball
         ballSpeed = 0;
         // write to the banner
