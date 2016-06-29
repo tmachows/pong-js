@@ -180,7 +180,7 @@ function createScene() {
     // right wall
     rightWall = createMesh(
         new THREE.CubeGeometry(wallWidth, wallHeight, wallDepth, wallQuality, wallQuality, wallQuality),
-        "portugal.png"
+        "portugalWall.png"
     );
 
     scene.add(rightWall);
@@ -195,7 +195,7 @@ function createScene() {
     // left wall
     leftWall = createMesh(
         new THREE.CubeGeometry(wallWidth, wallHeight, wallDepth, wallQuality, wallQuality, wallQuality),
-        "poland.png"
+        "polandWall.png"
     );
 
     scene.add(leftWall);
