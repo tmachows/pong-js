@@ -9,7 +9,8 @@ var fieldWidth = 400,
 var paddleWidth, paddleHeight, paddleDepth, paddleQuality, paddle1, paddle2;
 var paddle1DirY = 0,
     paddle2DirY = 0,
-    paddleSpeed = 3;
+    paddleSpeed = 3,
+    opponentPaddleSpeed = 3;
 
 // ball variables
 var ball;
@@ -73,7 +74,7 @@ function createMesh(geom, imageFile) {
 
 function createScene() {
     // set the scene size
-    var WIDTH = 1000,
+    var WIDTH = 1200,
         HEIGHT = 440;
 
     // set camera attributes
@@ -311,6 +312,8 @@ function ballPhysics() {
     if (ball.position.x <= -fieldWidth/2) {
         // CPU scores
         score2++;
+        difficulty -= 0.1;
+        opponentPaddleSpeed -= 1;
         // update scoreboard
         document.getElementById("scores").innerHTML = score1 + "-" + score2;
         // reset ball
@@ -322,6 +325,8 @@ function ballPhysics() {
     if (ball.position.x >= fieldWidth/2) {
         // Player scores
         score1++;
+        difficulty += 0.2;
+        opponentPaddleSpeed += 1;
         // update scoreboard
         document.getElementById("scores").innerHTML = score1 + "-" + score2;
         // reset ball
@@ -395,18 +400,18 @@ function opponentPaddleMovement() {
     paddle2DirY = (ball.position.y - paddle2.position.y) * difficulty;
 
     // in case the Lerp function produces a value above max paddle speed, we clamp it
-    if (Math.abs(paddle2DirY) <= paddleSpeed) {
+    if (Math.abs(paddle2DirY) <= opponentPaddleSpeed) {
         paddle2.position.y += paddle2DirY;
     }
-    // if the lerp value is too high, we have to limit speed to paddleSpeed
+    // if the lerp value is too high, we have to limit speed to opponentPaddleSpeed
     else {
         // if paddle is lerping in +ve direction
-        if (paddle2DirY > paddleSpeed) {
-            paddle2.position.y += paddleSpeed;
+        if (paddle2DirY > opponentPaddleSpeed) {
+            paddle2.position.y += opponentPaddleSpeed;
         }
         // if paddle is lerping in -ve direction
-        else if (paddle2DirY < -paddleSpeed) {
-            paddle2.position.y -= paddleSpeed;
+        else if (paddle2DirY < -opponentPaddleSpeed) {
+            paddle2.position.y -= opponentPaddleSpeed;
         }
     }
 
