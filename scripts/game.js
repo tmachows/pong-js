@@ -429,7 +429,8 @@ function paddlePhysics() {
                 // we impact ball angle when hitting it
                 // this is not realistic physics, just spices up the gameplay
                 // allows you to 'slice' the ball to beat the opponent
-                ballDirY -= paddle1DirY * 0.7;
+                // ballDirY -= paddle1DirY * 0.7;
+                ballDirY -= (paddle1.position.y - ball.position.y) * 0.1;
             }
         }
     }
