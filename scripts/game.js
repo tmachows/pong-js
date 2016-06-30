@@ -351,7 +351,7 @@ function ballPhysics() {
 
 function playerPaddleMovement() {
     // move left
-    if (Key.isDown(Key.A)) {
+    if (Key.isDown(Key.LEFT)) {
         // if paddle is not touching the side of table
         // we move
         if (paddle1.position.y < fieldHeight * 0.45) {
@@ -363,7 +363,7 @@ function playerPaddleMovement() {
         }
     }
     // move right
-    else if (Key.isDown(Key.D)) {
+    else if (Key.isDown(Key.RIGHT)) {
         // if paddle is not touching the side of table
         // we move
         if (paddle1.position.y > -fieldHeight * 0.45) {
